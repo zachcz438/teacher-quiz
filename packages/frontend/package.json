@@ -1,0 +1,15 @@
+{
+  "name": "@teacher-quiz/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@teacher-quiz/core": "*",
+    "astro": "^4.5.0"
+  }
+}

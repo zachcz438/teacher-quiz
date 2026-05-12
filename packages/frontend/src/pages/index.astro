@@ -19,10 +19,6 @@ import '../styles/global.css';
       <div class="welcome-hero">
         <span class="welcome-badge">教师风格测评 v2</span>
         <h1 class="welcome-title">发现你的<br/><em>教学风格</em></h1>
-        <p class="welcome-sub">
-          参考 MBTI 命名原则，把教师风格分成 <b>16 型</b>。<br/>
-          30 道情境题，5 分钟看见自己。
-        </p>
       </div>
 
       <div class="types-preview">
@@ -74,7 +70,6 @@ import '../styles/global.css';
         <span class="report-emoji" id="r-emoji">🌱</span>
         <h1 class="report-name" id="r-name">守望者</h1>
         <p class="report-tagline" id="r-tagline">默默守护学生成长</p>
-        <div class="report-code" id="r-code">WLEGF</div>
       </div>
 
       <div class="card">
@@ -219,7 +214,6 @@ import '../styles/global.css';
       $('r-emoji').textContent = report.family.emoji;
       $('r-name').textContent = report.type.name;
       $('r-tagline').textContent = report.type.tagline;
-      $('r-code').textContent = report.fiveLetterCode;
 
       $('r-tags').innerHTML = report.binaryTags.map(t => `
         <span class="binary-tag"><span class="em">${t.emoji}</span>${t.label}</span>
@@ -273,9 +267,9 @@ import '../styles/global.css';
 
     $('btn-share').addEventListener('click', async () => {
       const name = $('r-name').textContent;
-      const code = $('r-code').textContent;
       const family = $('r-family').textContent;
-      const text = `我是 #${code} ${name}（${family}）— 教师风格测评`;
+      const tagline = $('r-tagline').textContent;
+      const text = `我是【${name}】— ${tagline}（${family}）· 教师风格测评`;
       try {
         await navigator.clipboard.writeText(text);
         ($('btn-share') as HTMLButtonElement).textContent = '已复制 ✓';

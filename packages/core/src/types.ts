@@ -54,6 +54,8 @@ export interface Question {
   options: QuestionOption[];
   /** 反测谎反向重复对，记录配对题号 */
   invertOf?: number;
+  /** 不适用的年级段名称数组（与 GRADES.name 对齐）。空表示通用题 */
+  notApplicableTo?: string[];
 }
 
 /** 单次作答 */

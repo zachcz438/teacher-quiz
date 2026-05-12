@@ -121,6 +121,7 @@ export const PRO_EXTRA_QUESTIONS: Question[] = [
   {
     id: 41, category: '教学方法', text: '学生作业里出现明显的 AI 生成痕迹，你的第一动作——',
     kind: 'multi-dim', tier: 'pro',
+    notApplicableTo: ['学前', '小学低段'],
     options: [
       { label: 'A', text: '找他单独聊聊，先了解他最近学习上遇到了什么困难',
         weights: { temperature: 8, control: -5, thinking: 3 } },

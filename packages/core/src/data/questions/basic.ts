@@ -307,6 +307,7 @@ export const BASIC_QUESTIONS: Question[] = [
   {
     id: 27, category: '课堂管理', text: '如果有学生抄袭作业，你会——',
     kind: 'multi-dim', tier: 'basic',
+    notApplicableTo: ['学前'],
     options: [
       { label: 'A', text: '先了解他是不是遇到困难了，再决定怎么处理', weights: W_A },
       { label: 'B', text: '按规定处理，同时跟他分析抄袭的利弊', weights: W_B },

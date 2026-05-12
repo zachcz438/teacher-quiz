@@ -35,14 +35,20 @@ import { GROWTH_QUESTIONS } from './data/questions/growth.js';
 import { ANTI_FAKE_QUESTIONS } from './data/questions/anti-fake.js';
 import type { Question, QuestionTier } from './types.js';
 
-export function getQuestionPool(tier: QuestionTier): Question[] {
-  if (tier === 'basic') {
-    return [...BASIC_QUESTIONS];
-  }
-  return [
-    ...BASIC_QUESTIONS,
-    ...PRO_EXTRA_QUESTIONS,
-    ...GROWTH_QUESTIONS,
-    ...ANTI_FAKE_QUESTIONS,
-  ];
+/**
+ * 获取题库池
+ * @param tier basic = 30 题; pro = 60 题
+ * @param teacherGrade 老师当前主要教的年级段名（与 GRADES.name 对齐），传入则过滤不适用的题
+ */
+export function getQuestionPool(tier: QuestionTier, teacherGrade?: string): Question[] {
+  const all = tier === 'basic'
+    ? [...BASIC_QUESTIONS]
+    : [
+        ...BASIC_QUESTIONS,
+        ...PRO_EXTRA_QUESTIONS,
+        ...GROWTH_QUESTIONS,
+        ...ANTI_FAKE_QUESTIONS,
+      ];
+  if (!teacherGrade) return all;
+  return all.filter(q => !q.notApplicableTo?.includes(teacherGrade));
 }

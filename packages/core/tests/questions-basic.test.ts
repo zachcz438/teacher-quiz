@@ -115,3 +115,35 @@ describe('Question pool totals (per spec 6.1)', () => {
     expect(getQuestionPool('pro')).toHaveLength(60);
   });
 });
+
+describe('Question pool grade filtering', () => {
+  it('basic pool for 学前 老师 should skip Q27 (作业抄袭)', () => {
+    const pool = getQuestionPool('basic', '学前');
+    expect(pool).toHaveLength(29);
+    expect(pool.find(q => q.id === 27)).toBeUndefined();
+  });
+
+  it('pro pool for 学前 老师 should skip Q27 + Q41 (AI 抄袭)', () => {
+    const pool = getQuestionPool('pro', '学前');
+    expect(pool).toHaveLength(58);
+    expect(pool.find(q => q.id === 27)).toBeUndefined();
+    expect(pool.find(q => q.id === 41)).toBeUndefined();
+  });
+
+  it('pro pool for 小学低段 老师 should skip Q41 only', () => {
+    const pool = getQuestionPool('pro', '小学低段');
+    expect(pool).toHaveLength(59);
+    expect(pool.find(q => q.id === 27)).toBeDefined();
+    expect(pool.find(q => q.id === 41)).toBeUndefined();
+  });
+
+  it('pro pool for 小学中段+ 老师 should keep all 60 题', () => {
+    expect(getQuestionPool('pro', '小学中段')).toHaveLength(60);
+    expect(getQuestionPool('pro', '小学高段')).toHaveLength(60);
+    expect(getQuestionPool('pro', '小学以上')).toHaveLength(60);
+  });
+
+  it('no teacherGrade param = no filtering (default)', () => {
+    expect(getQuestionPool('pro')).toHaveLength(60);
+  });
+});

@@ -51,6 +51,23 @@ import '../styles/global.css';
       </div>
     </section>
 
+    {/* ========== Grade selector view ========== */}
+    <section id="view-grade" class="view">
+      <div class="grade-hero">
+        <span class="welcome-badge">先告诉我一个小事</span>
+        <h2 class="grade-title">你目前主要教<br/>哪个<em>年级段</em>？</h2>
+        <p class="grade-sub handnote">这个用来跳过对你不适用的题（比如学前老师不会遇到 AI 抄袭）— 不进入测评打分</p>
+      </div>
+      <div class="grade-options" id="grade-options">
+        <button class="grade-btn" data-grade="学前">🌱 学前 <span>K1-K3</span></button>
+        <button class="grade-btn" data-grade="小学低段">📒 小学低段 <span>1-2 年级</span></button>
+        <button class="grade-btn" data-grade="小学中段">📘 小学中段 <span>3-4 年级</span></button>
+        <button class="grade-btn" data-grade="小学高段">📕 小学高段 <span>5-6 年级</span></button>
+        <button class="grade-btn" data-grade="小学以上">🎓 小学以上 <span>初中 + 高中</span></button>
+        <button class="grade-btn" data-grade="">🧩 多个年级 / 不确定 <span>看所有题</span></button>
+      </div>
+    </section>
+
     {/* ========== Quiz view ========== */}
     <section id="view-quiz" class="view">
       <div class="quiz-header">
@@ -149,9 +166,10 @@ import '../styles/global.css';
     import type { Answer, Question } from '@teacher-quiz/core';
 
     /** 简易状态机 */
-    type View = 'welcome' | 'quiz' | 'report';
+    type View = 'welcome' | 'grade' | 'quiz' | 'report';
 
     let version: 'basic' | 'pro' = 'basic';
+    let teacherGrade: string = '';   // 老师当前主教年级，'' 表示不限
     let questions: Question[] = getQuestionPool('basic');
     let answers: Map<number, string> = new Map();
     let currentIdx = 0;
@@ -293,7 +311,14 @@ import '../styles/global.css';
         const v = (card as HTMLElement).dataset.version;
         if (v !== 'basic' && v !== 'pro') return;
         version = v;
-        questions = getQuestionPool(version);
+        showView('grade');
+      });
+    });
+
+    document.querySelectorAll('.grade-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        teacherGrade = (btn as HTMLElement).dataset.grade ?? '';
+        questions = getQuestionPool(version, teacherGrade || undefined);
         currentIdx = 0;
         answers.clear();
         buildVisualOrder();

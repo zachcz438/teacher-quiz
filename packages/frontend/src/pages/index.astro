@@ -31,13 +31,23 @@ import '../styles/global.css';
         ))}
       </div>
 
-      <div style="text-align: center; margin-top: 36px;">
-        <button class="btn" id="btn-start">开始测评 →</button>
-        <div class="welcome-meta">
-          <span>📋 30 道题</span>
-          <span>⏱ 约 5 分钟</span>
-          <span>🎭 16 型 · 5 大家族</span>
-        </div>
+      <div class="entry-cards">
+        <button class="entry-card" data-version="basic">
+          <span class="entry-emoji">⏱</span>
+          <span class="entry-title">基础版</span>
+          <span class="entry-meta">30 题 · 约 5 分钟</span>
+          <span class="entry-desc">看见你的主类型 + 5 张标签 + 完整画像</span>
+        </button>
+        <button class="entry-card primary" data-version="pro">
+          <span class="entry-emoji">🎯</span>
+          <span class="entry-title">完整版</span>
+          <span class="entry-meta">40 题 · 约 7 分钟</span>
+          <span class="entry-desc">基础版全部内容 + 你的反思力深度解读</span>
+        </button>
+      </div>
+      <div class="welcome-meta">
+        <span>🎭 16 型 · 5 大家族</span>
+        <span>🤝 性别中性 · 不下判决</span>
       </div>
     </section>
 
@@ -98,6 +108,31 @@ import '../styles/global.css';
         <p class="body-text" id="r-highlight"></p>
       </div>
 
+      <div class="card">
+        <h3 class="section-title">课堂场景画像</h3>
+        <p class="body-text" id="r-classroom"></p>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">你和学生的关系</h3>
+        <p class="body-text" id="r-relation"></p>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">高光时刻</h3>
+        <p class="body-text" id="r-moment"></p>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">容易踩的坑</h3>
+        <p class="body-text" id="r-pitfall"></p>
+      </div>
+
+      <div class="card reflection-card" id="r-reflection-card" style="display:none">
+        <h3 class="section-title">你的反思力 <span class="pro-badge">完整版解锁</span></h3>
+        <p class="body-text" id="r-reflection"></p>
+      </div>
+
       <div class="actions">
         <button class="btn btn-secondary" id="btn-restart">重新测试</button>
         <button class="btn" id="btn-share">复制结果</button>
@@ -116,7 +151,8 @@ import '../styles/global.css';
     /** 简易状态机 */
     type View = 'welcome' | 'quiz' | 'report';
 
-    const questions: Question[] = getQuestionPool('basic');
+    let version: 'basic' | 'pro' = 'basic';
+    let questions: Question[] = getQuestionPool('basic');
     let answers: Map<number, string> = new Map();
     let currentIdx = 0;
     /** 每题的乱序映射：visualOrder[qid][i] = 视觉位置 i 上展示的原始 label */
@@ -204,11 +240,17 @@ import '../styles/global.css';
     }
 
     function showReport() {
-      const answerArray: Answer[] = Array.from(answers, ([qid, label]) => ({
-        questionId: qid,
-        optionLabel: label,
-      }));
-      const report = assembleTeacherReport(answerArray, questions, 'basic');
+      // 拆分主测题答案 vs 成长题答案
+      const mainAnswers: Answer[] = [];
+      const growthAnswers: Answer[] = [];
+      for (const [qid, label] of answers) {
+        const q = questions.find(qq => qq.id === qid);
+        if (!q) continue;
+        const a = { questionId: qid, optionLabel: label };
+        if (q.kind === 'growth') growthAnswers.push(a);
+        else mainAnswers.push(a);
+      }
+      const report = assembleTeacherReport(mainAnswers, questions, version, growthAnswers);
 
       $('r-family').textContent = `${report.family.name} · 第 ${report.type.id}/16 型`;
       $('r-emoji').textContent = report.family.emoji;
@@ -221,6 +263,10 @@ import '../styles/global.css';
 
       $('r-personality').textContent = report.personality;
       $('r-highlight').textContent = report.highlight;
+      $('r-classroom').textContent = report.classroomScene;
+      $('r-relation').textContent = report.studentRelation;
+      $('r-moment').textContent = report.idealMoment;
+      $('r-pitfall').textContent = report.pitfall;
 
       $('r-superpowers').innerHTML = report.superpowers.map(s => `
         <div class="feature-item"><span class="ico">⚡</span><span>${s}</span></div>
@@ -229,16 +275,31 @@ import '../styles/global.css';
         <div class="feature-item weak"><span class="ico">🌱</span><span>${w}</span></div>
       `).join('');
 
+      // 反思力 section：仅当 pro 版且有 reflectionInsight
+      const reflectionCard = $('r-reflection-card');
+      if (report.reflectionInsight) {
+        $('r-reflection').textContent = report.reflectionInsight;
+        reflectionCard.style.display = '';
+      } else {
+        reflectionCard.style.display = 'none';
+      }
+
       showView('report');
     }
 
     // === 事件绑定 ===
-    $('btn-start').addEventListener('click', () => {
-      currentIdx = 0;
-      answers.clear();
-      buildVisualOrder();
-      renderQuestion();
-      showView('quiz');
+    document.querySelectorAll('.entry-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const v = (card as HTMLElement).dataset.version;
+        if (v !== 'basic' && v !== 'pro') return;
+        version = v;
+        questions = getQuestionPool(version);
+        currentIdx = 0;
+        answers.clear();
+        buildVisualOrder();
+        renderQuestion();
+        showView('quiz');
+      });
     });
 
     $('btn-prev').addEventListener('click', () => {
@@ -262,6 +323,7 @@ import '../styles/global.css';
     $('btn-restart').addEventListener('click', () => {
       currentIdx = 0;
       answers.clear();
+      visualOrder.clear();
       showView('welcome');
     });
 

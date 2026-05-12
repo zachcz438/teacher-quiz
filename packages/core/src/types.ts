@@ -79,11 +79,15 @@ export interface TeacherType {
   primary: { dimension: DimensionKey; polarity: Polarity };
   secondary: { dimension: DimensionKey; polarity: Polarity };
   tagline: string;        // 一句话超能力
-  // 详细画像（v1 stub，v2 完整版）：
-  personality: string;    // ~200 字 个人剖析
-  superpowers: string[];  // 3 条 教学超能力
-  weaknesses: string[];   // 2 条 小弱点
-  highlight: string;      // ~200 字 风格亮点
+  // 详细画像：
+  personality: string;       // ~80 字 你这个人
+  superpowers: string[];     // 3 条 教学超能力
+  weaknesses: string[];      // 2 条 小弱点
+  highlight: string;         // ~80 字 风格亮点
+  classroomScene: string;    // ~200 字 课堂场景画像
+  studentRelation: string;   // ~150 字 跟学生的关系
+  idealMoment: string;       // ~100 字 高光时刻
+  pitfall: string;           // ~100 字 容易踩的坑
 }
 
 /** 二元标签 */
@@ -167,6 +171,12 @@ export interface TeacherReport {
   superpowers: string[];
   weaknesses: string[];
   highlight: string;
+  classroomScene: string;
+  studentRelation: string;
+  idealMoment: string;
+  pitfall: string;
+  /** 仅 pro 版且提供了 growthAnswers 才有 */
+  reflectionInsight?: string;
 }
 
 /** 机构版报告（admin 渲染用） */

@@ -21,7 +21,7 @@ export { findTypeFromScores } from './scoring/type.js';
 export { matchProfile } from './scoring/matching.js';
 export { matchAllJobs } from './scoring/jobs.js';
 export { matchAllGrades } from './scoring/grades.js';
-export { calcGrowthPotential, calcStyleCeiling, calcAllPotential } from './scoring/potential.js';
+export { calcGrowthPotential, calcStyleCeiling, calcAllPotential, generateReflectionInsight } from './scoring/potential.js';
 export { calcCredibility } from './scoring/credibility.js';
 
 // Reports

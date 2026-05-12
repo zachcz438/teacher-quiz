@@ -41,8 +41,8 @@ import '../styles/global.css';
         <button class="entry-card primary" data-version="pro">
           <span class="entry-emoji">🎯</span>
           <span class="entry-title">完整版</span>
-          <span class="entry-meta">40 题 · 约 7 分钟</span>
-          <span class="entry-desc">基础版全部内容 + 你的反思力深度解读</span>
+          <span class="entry-meta">60 题 · 约 10 分钟</span>
+          <span class="entry-desc">基础版全部内容 + 强迫二选一题型 + 你的反思力深度解读</span>
         </button>
       </div>
       <div class="welcome-meta">
@@ -303,6 +303,7 @@ import '../styles/global.css';
     });
 
     $('btn-prev').addEventListener('click', () => {
+      if (!$('view-quiz').classList.contains('active')) return;
       if (currentIdx > 0) {
         currentIdx--;
         renderQuestion();
@@ -310,6 +311,7 @@ import '../styles/global.css';
     });
 
     $('btn-next').addEventListener('click', () => {
+      if (!$('view-quiz').classList.contains('active')) return;
       const q = questions[currentIdx];
       if (!q || !answers.has(q.id)) return;
       if (currentIdx === questions.length - 1) {

@@ -40,7 +40,7 @@ import '../styles/global.css';
         <div class="welcome-meta">
           <span>📋 30 道题</span>
           <span>⏱ 约 5 分钟</span>
-          <span>🔒 不记录数据</span>
+          <span>🎭 16 型 · 5 大家族</span>
         </div>
       </div>
     </section>
@@ -124,6 +124,27 @@ import '../styles/global.css';
     const questions: Question[] = getQuestionPool('basic');
     let answers: Map<number, string> = new Map();
     let currentIdx = 0;
+    /** 每题的乱序映射：visualOrder[qid][i] = 视觉位置 i 上展示的原始 label */
+    let visualOrder: Map<number, string[]> = new Map();
+    const VISUAL_LABELS = ['A', 'B', 'C', 'D', 'E'];
+
+    /** Fisher-Yates 洗牌 */
+    function shuffle<T>(arr: T[]): T[] {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j]!, a[i]!];
+      }
+      return a;
+    }
+
+    function buildVisualOrder() {
+      visualOrder.clear();
+      for (const q of questions) {
+        const originalLabels = q.options.map(o => o.label);
+        visualOrder.set(q.id, shuffle(originalLabels));
+      }
+    }
 
     function $<T extends HTMLElement = HTMLElement>(id: string): T {
       const el = document.getElementById(id);
@@ -147,16 +168,23 @@ import '../styles/global.css';
       $('q-progress-fill').style.width = `${((currentIdx + 1) / questions.length) * 100}%`;
 
       const selected = answers.get(q.id);
+      const order = visualOrder.get(q.id) ?? q.options.map(o => o.label);
+      const optByLabel = new Map(q.options.map(o => [o.label, o]));
+
       const html = `
         <span class="quiz-cat">${q.category}</span>
         <h2 class="quiz-question">${q.text}</h2>
         <div class="options">
-          ${q.options.map(o => `
-            <button class="option ${selected === o.label ? 'selected' : ''}" data-label="${o.label}">
-              <span class="label">${o.label}</span>
-              <span>${o.text}</span>
-            </button>
-          `).join('')}
+          ${order.map((origLabel, i) => {
+            const o = optByLabel.get(origLabel)!;
+            const visualLabel = VISUAL_LABELS[i] ?? origLabel;
+            return `
+              <button class="option ${selected === origLabel ? 'selected' : ''}" data-label="${origLabel}">
+                <span class="label">${visualLabel}</span>
+                <span>${o.text}</span>
+              </button>
+            `;
+          }).join('')}
         </div>
       `;
       $('q-card').innerHTML = html;
@@ -214,6 +242,7 @@ import '../styles/global.css';
     $('btn-start').addEventListener('click', () => {
       currentIdx = 0;
       answers.clear();
+      buildVisualOrder();
       renderQuestion();
       showView('quiz');
     });

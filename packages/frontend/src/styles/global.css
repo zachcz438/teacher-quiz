@@ -287,25 +287,6 @@ button {
   margin-top: 4px;
 }
 
-/* 反思力专属 section */
-.reflection-card {
-  background: linear-gradient(135deg, var(--moss-soft), var(--paper));
-  border: 1.5px dashed var(--moss);
-}
-.reflection-card .section-title::before { background: var(--moss); }
-.pro-badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 10px;
-  background: var(--moss);
-  color: white;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 100px;
-  letter-spacing: 1px;
-  font-family: var(--font-hand);
-  vertical-align: middle;
-}
 
 /* === Quiz view === */
 .quiz-header { margin-bottom: 32px; }

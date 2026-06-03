@@ -156,6 +156,65 @@ button {
   font-weight: 500;
 }
 
+/* === Resume banner（断点续答提示）=== */
+.resume-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #FFF4DC, var(--accent-soft));
+  border: 1.5px solid var(--accent);
+  border-radius: var(--r);
+  margin: 20px 0 0;
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+.resume-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+}
+.resume-emoji {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.resume-text strong {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.resume-text p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-family: var(--font-hand);
+  letter-spacing: 1px;
+}
+.resume-text p b {
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 15px;
+}
+.resume-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.resume-actions .btn {
+  padding: 10px 22px;
+  font-size: 14px;
+}
+@media (max-width: 480px) {
+  .resume-banner { flex-direction: column; align-items: stretch; }
+  .resume-actions { width: 100%; }
+  .resume-actions .btn { flex: 1; }
+}
+
 /* === Welcome view === */
 .welcome-hero {
   text-align: center;
@@ -193,31 +252,75 @@ button {
   line-height: 1.8;
 }
 
-/* 16 型预览墙 */
-.types-preview {
+.welcome-tag {
+  margin-top: 10px;
+  font-size: 16px;
+  color: var(--ink-soft);
+  letter-spacing: 1.5px;
+}
+
+/* 16 型头像马赛克墙：只露脸不报名字 —— 留悬念 */
+.types-mosaic {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin: 48px 0 36px;
-  max-width: 660px;
-  margin-left: auto;
-  margin-right: auto;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  margin: 40px auto 32px;
+  max-width: 720px;
+  padding: 0 8px;
 }
-.type-chip {
+.mosaic-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
   background: var(--paper);
-  border: 1px solid var(--paper-line);
-  border-radius: var(--r-sm);
-  padding: 12px 8px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--ink);
-  font-weight: 500;
-  transition: transform 0.2s, border-color 0.2s;
-  cursor: default;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  transition: transform .35s ease, box-shadow .35s ease;
 }
-.type-chip:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
-.type-chip .em { font-size: 18px; display: block; margin-bottom: 4px; }
-.type-chip .fam { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+.mosaic-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.92);
+  transition: filter .4s ease, transform .4s ease;
+}
+.mosaic-tile:nth-child(odd) { transform: translateY(0) rotate(-1.2deg); }
+.mosaic-tile:nth-child(even) { transform: translateY(4px) rotate(1.2deg); }
+.mosaic-tile:nth-child(4n) { transform: translateY(-3px) rotate(-0.6deg); }
+.mosaic-tile:hover {
+  transform: translateY(-4px) rotate(0deg) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+  z-index: 2;
+}
+.mosaic-tile:hover img { filter: saturate(1.1); }
+
+/* 渐隐遮罩：让下半部分淡入背景，强化"未知"感 */
+.mosaic-veil {
+  pointer-events: none;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 55%;
+  background: linear-gradient(to bottom,
+    rgba(250, 245, 235, 0) 0%,
+    rgba(250, 245, 235, 0.55) 60%,
+    rgba(250, 245, 235, 0.92) 100%);
+}
+.mosaic-hint {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
 
 .welcome-meta {
   margin-top: 28px;
@@ -458,6 +561,15 @@ button {
   margin-bottom: 12px;
   display: block;
 }
+.report-avatar {
+  display: block;
+  width: clamp(180px, 48vw, 260px);
+  height: auto;
+  margin: 8px auto 18px;
+  border-radius: 24px;
+  background: var(--paper-deep);
+  box-shadow: 0 6px 24px rgba(60, 40, 20, 0.10);
+}
 .report-name {
   font-family: var(--font-serif);
   font-size: clamp(36px, 8vw, 52px);
@@ -548,10 +660,36 @@ button {
 /* 行动区 */
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 36px;
 }
-.actions .btn { flex: 1; }
+.actions .btn { flex: 1 1 140px; min-width: 0; }
+.actions .btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* 长图分享页脚（默认隐藏，截图时显示） */
+.share-footer {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  padding: 22px 16px 28px;
+  text-align: center;
+  border-top: 1px dashed var(--paper-line);
+  background: transparent;
+}
+.share-mark {
+  font-family: var(--font-hand);
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+.share-url {
+  font-size: 12px;
+  color: var(--ink-faint);
+  letter-spacing: 0.5px;
+}
 
 /* 装饰：手写小注 */
 .handnote {
@@ -562,8 +700,10 @@ button {
 }
 
 /* 响应式 */
+@media (max-width: 720px) {
+  .types-mosaic { grid-template-columns: repeat(4, 1fr); }
+}
 @media (max-width: 480px) {
-  .types-preview { grid-template-columns: repeat(2, 1fr); }
   .actions { flex-direction: column; }
   .quiz-card { padding: 24px 18px; }
 }

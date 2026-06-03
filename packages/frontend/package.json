@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@teacher-quiz/core": "*",
-    "astro": "^4.5.0"
+    "astro": "^4.5.0",
+    "html2canvas": "^1.4.1"
   }
 }

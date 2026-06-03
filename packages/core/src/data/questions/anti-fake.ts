@@ -9,7 +9,7 @@ import type { Question } from '../../types.js';
  */
 export const ANTI_FAKE_QUESTIONS: Question[] = [
   {
-    id: 66, category: '反测谎', text: '面对一个让你抓狂的学生，你内心 OS 更接近——',
+    id: 66, category: '师生互动', text: '面对一个让你抓狂的学生，你内心 OS 更接近——',
     kind: 'anti-fake', tier: 'pro',
     invertOf: 7,
     options: [
@@ -21,7 +21,7 @@ export const ANTI_FAKE_QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 67, category: '反测谎', text: '关于备课，你最真实的状态是——',
+    id: 67, category: '备课方式', text: '关于备课，你最真实的状态是——',
     kind: 'anti-fake', tier: 'pro',
     invertOf: 4,
     options: [
@@ -33,7 +33,7 @@ export const ANTI_FAKE_QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 68, category: '反测谎', text: '如果一个学生公开说不喜欢你的课，你会——',
+    id: 68, category: '师生互动', text: '如果一个学生公开说不喜欢你的课，你会——',
     kind: 'anti-fake', tier: 'pro',
     options: [
       { label: 'A', text: '我从不在意学生喜不喜欢我，只在乎他学到了什么', weights: {}, isSocialDesirability: true },
@@ -44,7 +44,7 @@ export const ANTI_FAKE_QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 69, category: '反测谎', text: '关于工作中的疲惫感，你最贴近的描述是——',
+    id: 69, category: '教学风格', text: '关于工作中的疲惫感，你最贴近的描述是——',
     kind: 'anti-fake', tier: 'pro',
     options: [
       { label: 'A', text: '从不疲惫，每天都充满教学热情', weights: {}, isSocialDesirability: true },
@@ -55,7 +55,7 @@ export const ANTI_FAKE_QUESTIONS: Question[] = [
     ],
   },
   {
-    id: 70, category: '反测谎', text: '面对一个明显比你聪明的学生，你的真实反应是——',
+    id: 70, category: '师生互动', text: '面对一个明显比你聪明的学生，你的真实反应是——',
     kind: 'anti-fake', tier: 'pro',
     invertOf: 12,
     options: [

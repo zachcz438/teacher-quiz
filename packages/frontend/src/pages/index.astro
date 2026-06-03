@@ -1,6 +1,14 @@
 ---
-import { TEACHER_TYPES, FAMILIES } from '@teacher-quiz/core';
 import '../styles/global.css';
+
+const BASE = import.meta.env.BASE_URL;
+const AVATAR_FILES_SSR: Record<number, string> = {
+  1:'01_guardian.png', 2:'02_logicist.png', 3:'03_performer.png', 4:'04_bard.png',
+  5:'05_commander.png', 6:'06_cultivator.png', 7:'07_mentor.png', 8:'08_messenger.png',
+  9:'09_dialectician.png', 10:'10_coach.png', 11:'11_inspirer.png', 12:'12_strategist.png',
+  13:'13_communicator.png', 14:'14_observer.png', 15:'15_orator.png', 16:'16_listener.png',
+};
+const mosaicIds = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
 ---
 
 <!DOCTYPE html>
@@ -16,19 +24,35 @@ import '../styles/global.css';
 
     {/* ========== Welcome view ========== */}
     <section id="view-welcome" class="view active">
+      {/* 续答横幅：JS 检测到 localStorage 里有未完成的测试时显示 */}
+      <div id="resume-banner" class="resume-banner" style="display:none">
+        <div class="resume-text">
+          <span class="resume-emoji">📝</span>
+          <div>
+            <strong>你有一份未完成的测试</strong>
+            <p id="resume-meta">第 <b id="resume-current">1</b> / <span id="resume-total">30</span> 题</p>
+          </div>
+        </div>
+        <div class="resume-actions">
+          <button class="btn" id="btn-resume">继续</button>
+          <button class="btn btn-secondary" id="btn-resume-discard">重新开始</button>
+        </div>
+      </div>
+
       <div class="welcome-hero">
         <span class="welcome-badge">教师风格测评 v2</span>
         <h1 class="welcome-title">发现你的<br/><em>教学风格</em></h1>
+        <p class="welcome-tag handnote">16 种可能 · 一种最像你</p>
       </div>
 
-      <div class="types-preview">
-        {TEACHER_TYPES.map(t => (
-          <div class="type-chip">
-            <span class="em">{FAMILIES[t.family].emoji}</span>
-            {t.name}
-            <span class="fam">{FAMILIES[t.family].name}</span>
+      <div class="types-mosaic" aria-hidden="true">
+        {mosaicIds.map(id => (
+          <div class="mosaic-tile">
+            <img src={`${BASE}avatars/${AVATAR_FILES_SSR[id]}`} alt="" loading="lazy" />
           </div>
         ))}
+        <div class="mosaic-veil"></div>
+        <p class="mosaic-hint handnote">哪一个，是真正的你？↓</p>
       </div>
 
       <div class="entry-cards">
@@ -45,10 +69,6 @@ import '../styles/global.css';
           <span class="entry-desc">基础版全部内容 + 强迫二选一题型 + 你的反思力深度解读</span>
         </button>
       </div>
-      <div class="welcome-meta">
-        <span>🎭 16 型 · 5 大家族</span>
-        <span>🤝 性别中性 · 不下判决</span>
-      </div>
     </section>
 
     {/* ========== Grade selector view ========== */}
@@ -56,7 +76,6 @@ import '../styles/global.css';
       <div class="grade-hero">
         <span class="welcome-badge">先告诉我一个小事</span>
         <h2 class="grade-title">你目前主要教<br/>哪个<em>年级段</em>？</h2>
-        <p class="grade-sub handnote">这个用来跳过对你不适用的题（比如学前老师不会遇到 AI 抄袭）— 不进入测评打分</p>
       </div>
       <div class="grade-options" id="grade-options">
         <button class="grade-btn" data-grade="学前">🌱 学前 <span>K1-K3</span></button>
@@ -94,7 +113,7 @@ import '../styles/global.css';
         <span class="tape pink left"></span>
         <span class="tape right"></span>
         <span class="report-badge" id="r-family">守护族 · 第 1/16 型</span>
-        <span class="report-emoji" id="r-emoji">🌱</span>
+        <img class="report-avatar" id="r-avatar" alt="" />
         <h1 class="report-name" id="r-name">守望者</h1>
         <p class="report-tagline" id="r-tagline">默默守护学生成长</p>
       </div>
@@ -150,9 +169,16 @@ import '../styles/global.css';
         <p class="body-text" id="r-reflection"></p>
       </div>
 
-      <div class="actions">
+      {/* 仅在生成长图时显示的页脚 */}
+      <div class="share-footer" id="share-footer">
+        <span class="share-mark">教师风格测评 · v2</span>
+        <span class="share-url">zachcz438.github.io/teacher-style-quiz</span>
+      </div>
+
+      <div class="actions" id="report-actions">
         <button class="btn btn-secondary" id="btn-restart">重新测试</button>
-        <button class="btn" id="btn-share">复制结果</button>
+        <button class="btn" id="btn-save-image">保存长图</button>
+        <button class="btn btn-secondary" id="btn-share">复制文案</button>
       </div>
     </section>
 
@@ -164,6 +190,7 @@ import '../styles/global.css';
       assembleTeacherReport,
     } from '@teacher-quiz/core';
     import type { Answer, Question } from '@teacher-quiz/core';
+    import html2canvas from 'html2canvas';
 
     /** 简易状态机 */
     type View = 'welcome' | 'grade' | 'quiz' | 'report';
@@ -176,6 +203,13 @@ import '../styles/global.css';
     /** 每题的乱序映射：visualOrder[qid][i] = 视觉位置 i 上展示的原始 label */
     let visualOrder: Map<number, string[]> = new Map();
     const VISUAL_LABELS = ['A', 'B', 'C', 'D', 'E'];
+
+    const AVATAR_FILES: Record<number, string> = {
+      1: '01_guardian.png',  2: '02_logicist.png',     3: '03_performer.png',  4: '04_bard.png',
+      5: '05_commander.png', 6: '06_cultivator.png',   7: '07_mentor.png',     8: '08_messenger.png',
+      9: '09_dialectician.png', 10: '10_coach.png',    11: '11_inspirer.png',  12: '12_strategist.png',
+      13: '13_communicator.png', 14: '14_observer.png', 15: '15_orator.png',   16: '16_listener.png',
+    };
 
     /** Fisher-Yates 洗牌 */
     function shuffle<T>(arr: T[]): T[] {
@@ -221,7 +255,6 @@ import '../styles/global.css';
       const optByLabel = new Map(q.options.map(o => [o.label, o]));
 
       const html = `
-        <span class="quiz-cat">${q.category}</span>
         <h2 class="quiz-question">${q.text}</h2>
         <div class="options">
           ${order.map((origLabel, i) => {
@@ -243,6 +276,7 @@ import '../styles/global.css';
           const label = (el as HTMLElement).dataset.label;
           if (!label) return;
           answers.set(q.id, label);
+          saveProgress();  // 选答即存档
           $('q-card').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
           el.classList.add('selected');
           $('btn-next').classList.remove('disabled');
@@ -271,7 +305,8 @@ import '../styles/global.css';
       const report = assembleTeacherReport(mainAnswers, questions, version, growthAnswers);
 
       $('r-family').textContent = `${report.family.name} · 第 ${report.type.id}/16 型`;
-      $('r-emoji').textContent = report.family.emoji;
+      $('r-avatar').src = `${import.meta.env.BASE_URL}avatars/${AVATAR_FILES[report.type.id]}`;
+      $('r-avatar').alt = report.type.name;
       $('r-name').textContent = report.type.name;
       $('r-tagline').textContent = report.type.tagline;
 
@@ -305,12 +340,106 @@ import '../styles/global.css';
       showView('report');
     }
 
+    // === 断点续答 (localStorage) ===
+    const PROGRESS_KEY = 'teacher-quiz-progress-v1';
+
+    type SavedProgress = {
+      version: 'basic' | 'pro';
+      teacherGrade: string;
+      answers: [number, string][];
+      currentIdx: number;
+      visualOrder: [number, string[]][];
+      savedAt: number;
+    };
+
+    function saveProgress() {
+      try {
+        const data: SavedProgress = {
+          version,
+          teacherGrade,
+          answers: Array.from(answers.entries()),
+          currentIdx,
+          visualOrder: Array.from(visualOrder.entries()),
+          savedAt: Date.now(),
+        };
+        localStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
+      } catch (e) {
+        console.warn('saveProgress failed:', e);
+      }
+    }
+
+    function loadProgress(): SavedProgress | null {
+      try {
+        const raw = localStorage.getItem(PROGRESS_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw) as SavedProgress;
+        // 简单校验
+        if (!data.version || !Array.isArray(data.answers)) return null;
+        return data;
+      } catch {
+        return null;
+      }
+    }
+
+    function clearProgress() {
+      try { localStorage.removeItem(PROGRESS_KEY); } catch {}
+    }
+
+    /** 启动时检查 localStorage，如果有未完成测试，显示续答横幅 */
+    function checkResumeOnBoot() {
+      const saved = loadProgress();
+      if (!saved) return;
+      // 必须有至少 1 个答案，且没答完
+      if (saved.answers.length === 0) return;
+      // 还原 questions 数组才能算总数
+      const pool = getQuestionPool(saved.version, saved.teacherGrade || undefined);
+      if (saved.answers.length >= pool.length) {
+        // 已经答完了，但用户没看报告就关页面了 — 清掉
+        clearProgress();
+        return;
+      }
+      $('resume-current').textContent = String(Math.min(saved.currentIdx + 1, pool.length));
+      $('resume-total').textContent = String(pool.length);
+      $('resume-banner').style.display = 'flex';
+    }
+
+    /** 从保存的状态恢复，跳到 quiz 视图 */
+    function resumeFromSaved(saved: SavedProgress) {
+      version = saved.version;
+      teacherGrade = saved.teacherGrade;
+      questions = getQuestionPool(version, teacherGrade || undefined);
+      answers = new Map(saved.answers);
+      visualOrder = new Map(saved.visualOrder);
+      // 跳到第一道未答的题（如果中间有空，去找；否则用 savedIdx）
+      const firstUnanswered = questions.findIndex(q => !answers.has(q.id));
+      currentIdx = firstUnanswered >= 0 ? firstUnanswered : Math.min(saved.currentIdx, questions.length - 1);
+      renderQuestion();
+      showView('quiz');
+    }
+
     // === 事件绑定 ===
+    $('btn-resume').addEventListener('click', () => {
+      const saved = loadProgress();
+      if (!saved) {
+        $('resume-banner').style.display = 'none';
+        return;
+      }
+      resumeFromSaved(saved);
+    });
+
+    $('btn-resume-discard').addEventListener('click', () => {
+      clearProgress();
+      $('resume-banner').style.display = 'none';
+    });
+
     document.querySelectorAll('.entry-card').forEach(card => {
       card.addEventListener('click', () => {
         const v = (card as HTMLElement).dataset.version;
         if (v !== 'basic' && v !== 'pro') return;
         version = v;
+        // 用户主动开始新测试 — 清掉旧进度
+        clearProgress();
+        $('resume-banner').style.display = 'none';
         showView('grade');
       });
     });
@@ -322,6 +451,7 @@ import '../styles/global.css';
         currentIdx = 0;
         answers.clear();
         buildVisualOrder();
+        saveProgress();  // 此时存一份初始状态，方便用户刚开始就退出能恢复
         renderQuestion();
         showView('quiz');
       });
@@ -331,6 +461,7 @@ import '../styles/global.css';
       if (!$('view-quiz').classList.contains('active')) return;
       if (currentIdx > 0) {
         currentIdx--;
+        saveProgress();
         renderQuestion();
       }
     });
@@ -340,9 +471,11 @@ import '../styles/global.css';
       const q = questions[currentIdx];
       if (!q || !answers.has(q.id)) return;
       if (currentIdx === questions.length - 1) {
+        clearProgress();  // 进入报告 = 测试完成
         showReport();
       } else {
         currentIdx++;
+        saveProgress();
         renderQuestion();
       }
     });
@@ -351,6 +484,7 @@ import '../styles/global.css';
       currentIdx = 0;
       answers.clear();
       visualOrder.clear();
+      clearProgress();
       showView('welcome');
     });
 
@@ -362,11 +496,80 @@ import '../styles/global.css';
       try {
         await navigator.clipboard.writeText(text);
         ($('btn-share') as HTMLButtonElement).textContent = '已复制 ✓';
-        setTimeout(() => ($('btn-share') as HTMLButtonElement).textContent = '复制结果', 2000);
+        setTimeout(() => ($('btn-share') as HTMLButtonElement).textContent = '复制文案', 2000);
       } catch {
         alert(text);
       }
     });
+
+    /** 把整个结果页截成长图保存 */
+    $('btn-save-image').addEventListener('click', async () => {
+      const btn = $('btn-save-image') as HTMLButtonElement;
+      const reportSection = document.getElementById('view-report') as HTMLElement;
+      const actionsBar = document.getElementById('report-actions') as HTMLElement;
+      const shareFooter = document.getElementById('share-footer') as HTMLElement;
+      if (!reportSection) return;
+
+      btn.disabled = true;
+      btn.textContent = '生成中…';
+
+      // 截图前：隐藏操作条 + 显示分享 footer
+      const prevActionsDisplay = actionsBar.style.display;
+      const prevFooterDisplay = shareFooter.style.display;
+      actionsBar.style.display = 'none';
+      shareFooter.style.display = 'flex';
+
+      // 等所有头像图片加载完毕（避免空白头像）
+      const imgs = Array.from(reportSection.querySelectorAll('img')) as HTMLImageElement[];
+      await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
+        img.onload = img.onerror = () => res(null);
+      })));
+
+      try {
+        const canvas = await html2canvas(reportSection, {
+          scale: 2,
+          backgroundColor: '#faf5eb',
+          useCORS: true,
+          logging: false,
+          ignoreElements: (el) => el.id === 'report-actions',
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+
+        const name = $('r-name').textContent?.trim() || '我的教学风格';
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `教师风格-${name}.png`;
+
+        // 移动端 Safari 不支持 download 属性 → 在新标签打开图片
+        const isMobileSafari = /iP(hone|ad|od)/.test(navigator.userAgent);
+        if (isMobileSafari) {
+          const w = window.open();
+          if (w) {
+            w.document.write(`<title>长按图片保存</title><img src="${dataUrl}" style="width:100%;display:block" />`);
+          }
+        } else {
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+
+        btn.textContent = '已保存 ✓';
+      } catch (err) {
+        console.error(err);
+        btn.textContent = '生成失败，重试';
+      } finally {
+        // 恢复
+        actionsBar.style.display = prevActionsDisplay;
+        shareFooter.style.display = prevFooterDisplay;
+        setTimeout(() => {
+          btn.textContent = '保存长图';
+          btn.disabled = false;
+        }, 2000);
+      }
+    });
+
+    // === 启动：检测是否有未完成的测试 ===
+    checkResumeOnBoot();
   </script>
 </body>
 </html>

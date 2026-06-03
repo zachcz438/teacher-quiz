@@ -11,10 +11,6 @@
 
 > Modern flat vector character illustration, in the style of 16personalities.com / Slack onboarding illustrations / Spotify Wrapped. Full-body single character, slightly stylized proportions, soft chunky color blocks with subtle gradient shading. Androgynous / gender-neutral figure with simplified facial features. Modern casual clothing. Solid single-color background matching family palette. Clean lines, NO photorealism, NO 3D rendering, NO anime style. All 16 characters must share consistent style/proportions/line-weight to feel like a series.
 
-**CN（推荐喂即梦 / 通义万相 / 文心一格）：**
-
-> 现代扁平矢量人物插画，参考 16personalities.com / Slack 引导插画 / Spotify Wrapped 风格。全身单人角色，造型略夸张但简洁，柔和厚重的色块 + 微妙渐变阴影。中性气质（避免明显的男性/女性化特征），现代休闲穿着，简化的脸部细节。背景为单色（按家族色），整洁干净。禁止照片写实、3D 渲染、漫画/二次元风。16 张角色风格 / 比例 / 线条一致，像一个系列。
-
 ---
 
 ## 🌱 守护族（5 张） · 背景色 `#DCE8D2`（柔和苔绿）
